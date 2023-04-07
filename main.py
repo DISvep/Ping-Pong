@@ -8,6 +8,7 @@ pygame.display.set_caption("Ping-Pong")
 
 last = 0
 slast = 0
+lastt = 0
 
 
 class Text():
@@ -27,6 +28,9 @@ class Text():
         scr.blit(self.s1, (250, 40))
         scr.blit(self.s2, (40, 40))
         scr.blit(self.s3, (460, 40))
+
+    def reset(self):
+        self.times = 0
 
     def ai(self):
         self.score_ai += 1
@@ -55,7 +59,14 @@ class Ball(pygame.sprite.Sprite):
         pygame.draw.circle(scr, (255, 255, 255), (self.rect.x, self.rect.y), 5, 2)
         # scr.blit(self.surf, (self.rect.x, self.rect.y))
 
+    def harder(self):
+        self.speed += 0.5
+
+    def reset(self):
+        self.speed = 1.5
+
     def update(self):
+        global lastt
         if self.start:
             if random.randint(1, 2) == 1:
                 self.right = True
@@ -66,12 +77,18 @@ class Ball(pygame.sprite.Sprite):
             self.start = True
             self.rect.x, self.rect.y = 250, 350
             points.ai()
+            points.reset()
+            ball.reset()
         elif self.rect.x <= 0:
             self.start = True
             self.rect.x, self.rect.y = 250, 350
             points.plr()
+            points.reset()
+            ball.reset()
         if self.rect.y >= 600 or self.rect.y <= 100:
-            self.up = not self.up
+            if cur - lastt >= 500:
+                self.up = not self.up
+                lastt = cur
         if self.right:
             if self.up:
                 self.rect.x += self.speed
@@ -125,6 +142,7 @@ plr = Wall(True)
 AI = Wall(False)
 ball = Ball()
 points = Text()
+score = 0
 
 clock = pygame.time.Clock()
 game = True
@@ -143,8 +161,13 @@ while game:
 
     cur = pygame.time.get_ticks()
 
+    if score == 10:
+        ball.harder()
+        score = 0
+
     if cur - slast >= 1000:
         points.time()
+        score += 1
         slast = cur
 
     if pygame.Rect.colliderect(plr.rect, ball.rect) or pygame.Rect.colliderect(AI.rect, ball.rect):
