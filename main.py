@@ -6,6 +6,8 @@ pygame.init()
 scr = pygame.display.set_mode((500, 500))
 pygame.display.set_caption("Ping-Pong")
 
+last = 0
+
 
 class Ball(pygame.sprite.Sprite):
     def __init__(self):
@@ -58,13 +60,14 @@ class Ball(pygame.sprite.Sprite):
 class Wall(pygame.sprite.Sprite):
     def __init__(self, plr):
         super().__init__()
-        self.plr = plr
+        self.surf = pygame.Surface((10, 50))
+        self.surf.fill((255, 255, 255))
+        self.rect = self.surf.get_rect()
         if plr:
-            self.surf = pygame.Surface((10, 50))
-            self.surf.fill((255, 255, 255))
-            self.rect = self.surf.get_rect()
             self.rect.x = 450
-            self.rect.y = 250
+        else:
+            self.rect.x = 50
+        self.rect.y = 250
 
     def draw(self):
         scr.blit(self.surf, (self.rect.x, self.rect.y))
@@ -77,8 +80,15 @@ class Wall(pygame.sprite.Sprite):
         if self.rect.y < 450:
             self.rect.y += 10
 
+    def update(self, ballRect):
+        if ballRect.rect.y > self.rect.y + 10:
+            self.down()
+        elif ballRect.rect.y < self.rect.y - 10:
+            self.up()
+
 
 plr = Wall(True)
+AI = Wall(False)
 ball = Ball()
 
 clock = pygame.time.Clock()
@@ -96,10 +106,16 @@ while game:
     if key[pygame.K_s]:
         plr.down()
 
-    if pygame.Rect.colliderect(plr.rect, ball.rect):
-        ball.bounce()
+    cur = pygame.time.get_ticks()
+
+    if pygame.Rect.colliderect(plr.rect, ball.rect) or pygame.Rect.colliderect(AI.rect, ball.rect):
+        if cur - last >= 1000:
+            ball.bounce()
+            last = cur
 
     plr.draw()
+    AI.draw()
+    AI.update(ball)
     ball.draw()
     ball.update()
     pygame.display.update()
