@@ -21,11 +21,11 @@ class Wall(pygame.sprite.Sprite):
         scr.blit(self.surf, (self.rect.x, self.rect.y))
 
     def up(self):
-        if self.rect.y > 50:
+        if self.rect.y > 0:
             self.rect.y -= 10
 
     def down(self):
-        if self.rect.y > 450:
+        if self.rect.y < 450:
             self.rect.y += 10
 
 
